@@ -566,11 +566,41 @@ st.markdown(
         border-radius: 10px;
     }
 
-    /* Keep native chat input visually integrated. */
+    /* ---------- Chat input readability ---------- */
     div[data-testid="stChatInput"] {
         padding-top: 0.65rem;
     }
 
+    div[data-testid="stChatInput"] textarea {
+        color: #171923 !important;
+        background-color: #ffffff !important;
+        caret-color: #171923 !important;
+    }
+
+    div[data-testid="stChatInput"] textarea::placeholder {
+        color: #6b7280 !important;
+        opacity: 1 !important;
+    }
+
+    div[data-testid="stChatInput"] textarea:focus {
+        color: #171923 !important;
+        background-color: #ffffff !important;
+    }
+    /* ---------- Chat message readability ---------- */
+    div[data-testid="stChatMessage"] {
+        color: #171923 !important;
+    }
+
+    div[data-testid="stChatMessage"] p,
+    div[data-testid="stChatMessage"] li,
+    div[data-testid="stChatMessage"] span {
+        color: #171923 !important;
+    }
+
+    div[data-testid="stChatMessage"] strong,
+    div[data-testid="stChatMessage"] em {
+        color: #171923 !important;
+    }
     /* ---------- Responsive ---------- */
     @media (max-width: 1050px) {
         .main .block-container {
