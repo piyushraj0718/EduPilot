@@ -1,0 +1,8 @@
+venv/
+.env
+__pycache__/
+*.pyc
+vectorstore/
+data/uploads/
+.streamlit/secrets.toml
+app_oldversio*.py
