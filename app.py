@@ -2,24 +2,12 @@ import base64
 import hashlib
 import html
 import os
-import tempfile
 
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
 from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFLoader
-
-from rag.splitter import split_documents
-from rag.embeddings import get_embeddings
-from rag.topics import extract_topics
-
-from rag.vector_store import (
-    create_vector_store,
-    save_vector_store,
-    load_vector_store,
-)
 
 from quiz.generator import Quiz
 from quiz.evaluator import evaluate_quiz
@@ -32,11 +20,6 @@ from quiz.state import (
 
 load_dotenv()
 
-
-# ============================================================
-# PAGE CONFIG
-# ============================================================
-
 st.set_page_config(
     page_title="EduPilot — AI Study Companion",
     page_icon="📚",
@@ -44,16 +27,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
-# ============================================================
-# SESSION STATE
-# ============================================================
-
 DEFAULTS = {
     "file_hash": None,
     "file_name": None,
     "pdf_bytes": None,
-    "vector_store": None,
     "messages": [],
     "page_count": 0,
     "chunk_count": 0,
@@ -76,17 +53,7 @@ for key, value in DEFAULTS.items():
 
 initialize_quiz_state()
 
-
-# ============================================================
-# CONFIG
-# ============================================================
-
 API_URL = os.getenv("EDUPILOT_API_URL", "http://127.0.0.1:8000")
-
-
-# ============================================================
-# CUSTOM DESIGN SYSTEM
-# ============================================================
 
 st.markdown(
     """
@@ -622,10 +589,6 @@ st.markdown(
 )
 
 
-# ============================================================
-# HELPERS
-# ============================================================
-
 def esc(value):
     return html.escape(str(value))
 
@@ -670,49 +633,36 @@ def tool_badge(tool):
     return labels.get(tool, f"✦  {tool}")
 
 
-def prepare_vector_store(file_bytes, file_hash):
-    vectorstore_path = os.path.join("vectorstore", file_hash)
-    embeddings = get_embeddings()
-
-    if os.path.exists(os.path.join(vectorstore_path, "index.faiss")):
-        with st.spinner("Loading your existing study index..."):
-            vector_store = load_vector_store(
-                embeddings,
-                vectorstore_path,
-            )
-
-        with tempfile.NamedTemporaryFile(
-            delete=False,
-            suffix=".pdf",
-        ) as file:
-            file.write(file_bytes)
-            pdf_path = file.name
-
-        documents = PyPDFLoader(pdf_path).load()
-        return vector_store, documents, None
-
-    with st.spinner("Reading your PDF..."):
-        with tempfile.NamedTemporaryFile(
-            delete=False,
-            suffix=".pdf",
-        ) as file:
-            file.write(file_bytes)
-            pdf_path = file.name
-
-        documents = PyPDFLoader(pdf_path).load()
-        chunks = split_documents(documents)
-
-    with st.spinner("Creating your study index..."):
-        vector_store = create_vector_store(
-            chunks,
-            embeddings,
+def upload_document_to_backend(file_bytes, file_name):
+    """Upload PDF to backend for processing."""
+    try:
+        files = {'file': (file_name, file_bytes, 'application/pdf')}
+        
+        response = requests.post(
+            f"{API_URL}/documents/upload",
+            files=files,
+            timeout=120
         )
-        save_vector_store(
-            vector_store,
-            vectorstore_path,
-        )
-
-    return vector_store, documents, len(chunks)
+        
+        if response.status_code != 200:
+            error_detail = response.json().get('detail', 'Upload failed')
+            raise Exception(f"Backend upload failed: {error_detail}")
+        
+        data = response.json()
+        
+        return {
+            'file_hash': data['file_hash'],
+            'file_name': data['file_name'],
+            'page_count': data['page_count'],
+            'chunk_count': data['chunk_count'],
+            'topics': data['topics']
+        }
+    except requests.exceptions.Timeout:
+        raise Exception("Upload timed out. The document may be too large or the server is busy.")
+    except requests.exceptions.ConnectionError:
+        raise Exception("Cannot connect to backend server. Make sure the API is running.")
+    except Exception as e:
+        raise Exception(f"Upload failed: {str(e)}")
 
 
 def render_pdf_viewer(pdf_bytes, filename, page_number):
@@ -1636,10 +1586,6 @@ def render_pdf_panel():
         st.info("Upload a PDF to open your study material.")
 
 
-# ============================================================
-# TOP-LEVEL THREE COLUMN WORKSPACE
-# ============================================================
-
 left_col, center_col, right_col = st.columns(
     [1.0, 3.05, 2.0],
     gap="large",
@@ -1656,33 +1602,23 @@ with center_col:
         if st.session_state.file_hash != file_hash:
             reset_document_state()
 
-            vector_store, documents, chunk_count = prepare_vector_store(
-                file_bytes,
-                file_hash,
-            )
-
-            st.session_state.file_hash = file_hash
-            st.session_state.file_name = uploaded_file.name
-            st.session_state.pdf_bytes = file_bytes
-            st.session_state.vector_store = vector_store
-            st.session_state.page_count = len(documents)
-            st.session_state.chunk_count = chunk_count or 0
-
-        # Re-load document pages for topic extraction only when needed.
-        if st.session_state.topics_file_hash != file_hash:
-            with tempfile.NamedTemporaryFile(
-                delete=False,
-                suffix=".pdf",
-            ) as file:
-                file.write(file_bytes)
-                pdf_path = file.name
-
-            documents = PyPDFLoader(pdf_path).load()
-
-            with st.spinner("Finding the main topics in your document…"):
-                st.session_state.topics = extract_topics(documents)
-
-            st.session_state.topics_file_hash = file_hash
+            with st.spinner("Processing your document..."):
+                try:
+                    result = upload_document_to_backend(file_bytes, uploaded_file.name)
+                    
+                    st.session_state.file_hash = result['file_hash']
+                    st.session_state.file_name = result['file_name']
+                    st.session_state.page_count = result['page_count']
+                    st.session_state.chunk_count = result['chunk_count']
+                    st.session_state.topics = result['topics']
+                    st.session_state.topics_file_hash = result['file_hash']
+                    st.session_state.pdf_bytes = file_bytes
+                    
+                    st.success("Document processed successfully!")
+                    
+                except Exception as e:
+                    st.error(f"Failed to process document: {str(e)}")
+                    st.info("Make sure the FastAPI backend is running at " + API_URL)
 
     if not st.session_state.file_hash:
         st.markdown(

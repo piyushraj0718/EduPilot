@@ -1,15 +1,9 @@
 from llm import get_llm
 
 
-def generate_answer(
-    question,
-    context
-):
-
-    llm = get_llm(
-        temperature=0.2
-    )
-
+def generate_answer(question, context):
+    llm = get_llm(temperature=0.2)
+    
     prompt = f"""
 You are EduPilot, an AI study assistant.
 
@@ -37,7 +31,6 @@ Instructions:
 
 Return only the answer.
 """
-
+    
     response = llm.invoke(prompt)
-
     return response.content

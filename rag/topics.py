@@ -2,20 +2,12 @@ from llm import get_llm
 
 
 def extract_topics(documents):
-    # Use representative content from the document
-    # instead of sending the entire PDF to the LLM.
     selected_documents = documents[:20]
-
-    text = "\n\n".join(
-        document.page_content
-        for document in selected_documents
-    )
-
-    # Keep the request comfortably below the model limit.
+    text = "\n\n".join(document.page_content for document in selected_documents)
     text = text[:18000]
-
+    
     llm = get_llm(temperature=0)
-
+    
     prompt = f"""
 You are EduPilot, an AI study assistant.
 
@@ -45,24 +37,21 @@ Example:
 4. Random Forest
 5. Support Vector Machines
 """
-
+    
     response = llm.invoke(prompt)
-
+    
     topics = []
-
     for line in response.content.splitlines():
         line = line.strip()
-
         if not line:
             continue
-
+        
         if "." in line:
             line = line.split(".", 1)[1].strip()
-
         elif ")" in line:
             line = line.split(")", 1)[1].strip()
-
+        
         if line:
             topics.append(line)
-
+    
     return topics[:15]

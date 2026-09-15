@@ -23,6 +23,3 @@ services:
       - .env
     depends_on:
       - backend
-    volumes:
-      - ./vectorstore:/app/vectorstore
-      - ./data/uploads:/app/data/uploads

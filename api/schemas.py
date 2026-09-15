@@ -30,3 +30,11 @@ class LearnerAnalysisRequest(BaseModel):
 class LearnerAnalysisResponse(BaseModel):
     weak_topics: Any
     recommendation: str
+
+
+class DocumentUploadResponse(BaseModel):
+    file_hash: str
+    file_name: str
+    page_count: int
+    chunk_count: int
+    topics: list[str]

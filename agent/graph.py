@@ -20,25 +20,17 @@ class AgentState(TypedDict):
 
 
 def choose_tool(state: AgentState):
-
     question = state["question"]
     source = state["source"]
-
-    # User explicitly selected PDF
+    
     if source == "PDF":
-        return {
-            "tool": "PDF"
-        }
-
-    # User explicitly selected WEB
+        return {"tool": "PDF"}
+    
     if source == "WEB":
-        return {
-            "tool": "WEB"
-        }
-
-    # AUTO mode
+        return {"tool": "WEB"}
+    
     llm = get_llm()
-
+    
     prompt = f"""
 You are the routing system for EduPilot,
 an AI study assistant.
@@ -72,37 +64,27 @@ PDF
 CALCULATOR
 WEB
 """
-
+    
     response = llm.invoke(prompt)
-
     tool = response.content.strip().upper()
-
+    
     if tool not in ["PDF", "CALCULATOR", "WEB"]:
         tool = "PDF"
-
-    return {
-        "tool": tool
-    }
+    
+    return {"tool": tool}
 
 
 def create_graph(vector_store):
-
     def pdf_node(state: AgentState):
-
-        result = search_pdf(
-            vector_store,
-            state["question"]
-        )
-
+        result = search_pdf(vector_store, state["question"])
         return {
             "result": result["context"],
             "sources": result["sources"]
         }
-
+    
     def calculator_node(state: AgentState):
-
         llm = get_llm()
-
+        
         prompt = f"""
 Convert the following mathematical question
 into ONLY a valid mathematical expression
@@ -127,37 +109,29 @@ Return ONLY the expression.
 
 Do not include explanation.
 """
-
+        
         response = llm.invoke(prompt)
-
         expression = response.content.strip()
-
         result = calculate(expression)
-
+        
         return {
             "result": result,
             "sources": []
         }
-
+    
     def web_node(state: AgentState):
-
-        result = web_search(
-            state["question"]
-        )
-
+        result = web_search(state["question"])
         return {
             "result": result,
             "sources": []
         }
-
+    
     def route_tool(state: AgentState):
-
         return state["tool"]
-
+    
     def final_answer(state: AgentState):
-
         llm = get_llm()
-
+        
         prompt = f"""
 You are EduPilot, an AI study assistant.
 
@@ -189,44 +163,20 @@ Instructions:
 
 Return only the final answer.
 """
-
+        
         response = llm.invoke(prompt)
-
-        return {
-            "answer": response.content
-        }
-
+        return {"answer": response.content}
+    
     graph = StateGraph(AgentState)
-
-    graph.add_node(
-        "choose_tool",
-        choose_tool
-    )
-
-    graph.add_node(
-        "pdf",
-        pdf_node
-    )
-
-    graph.add_node(
-        "calculator",
-        calculator_node
-    )
-
-    graph.add_node(
-        "web",
-        web_node
-    )
-
-    graph.add_node(
-        "final_answer",
-        final_answer
-    )
-
-    graph.set_entry_point(
-        "choose_tool"
-    )
-
+    
+    graph.add_node("choose_tool", choose_tool)
+    graph.add_node("pdf", pdf_node)
+    graph.add_node("calculator", calculator_node)
+    graph.add_node("web", web_node)
+    graph.add_node("final_answer", final_answer)
+    
+    graph.set_entry_point("choose_tool")
+    
     graph.add_conditional_edges(
         "choose_tool",
         route_tool,
@@ -236,25 +186,10 @@ Return only the final answer.
             "WEB": "web"
         }
     )
-
-    graph.add_edge(
-        "pdf",
-        "final_answer"
-    )
-
-    graph.add_edge(
-        "calculator",
-        "final_answer"
-    )
-
-    graph.add_edge(
-        "web",
-        "final_answer"
-    )
-
-    graph.add_edge(
-        "final_answer",
-        END
-    )
-
+    
+    graph.add_edge("pdf", "final_answer")
+    graph.add_edge("calculator", "final_answer")
+    graph.add_edge("web", "final_answer")
+    graph.add_edge("final_answer", END)
+    
     return graph.compile()
