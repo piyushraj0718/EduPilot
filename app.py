@@ -583,6 +583,235 @@ st.markdown(
             font-size: 1.65rem;
         }
     }
+
+    /* =========================================================
+       EduPilot pastel color palette — color overrides only
+       Based on app_edupilot_pastel_v3.py
+       ========================================================= */
+
+    :root {
+        --ep-bg: #eee8ff;
+        --ep-surface: rgba(255,255,255,.58);
+        --ep-surface-soft: #f2edff;
+        --ep-border: #ddd0ff;
+        --ep-text: #17145c;
+        --ep-muted: #625b96;
+        --ep-primary: #6857f5;
+        --ep-primary-dark: #5e4be8;
+        --ep-success: #168a55;
+        --ep-warning: #b7791f;
+        --ep-danger: #c53030;
+    }
+
+    .stApp {
+        background:
+            radial-gradient(circle at 78% 18%, rgba(205,188,255,.34), transparent 31%),
+            radial-gradient(circle at 18% 74%, rgba(231,204,255,.25), transparent 30%),
+            linear-gradient(135deg, #eee8ff 0%, #fff3fb 46%, #eee9ff 100%);
+        color: #17145c;
+    }
+
+    .ep-brand { color: #15115d; }
+    .ep-brand-mark {
+        background: linear-gradient(145deg, #e7ddff, #f6eaff);
+        color: #6754f5;
+        box-shadow: 0 5px 15px rgba(112,83,240,.12);
+    }
+    .ep-tagline { color: #625b96; }
+
+    .ep-nav-label { color: #8b84b5; }
+
+    .ep-doc-mini {
+        background: rgba(255,255,255,.62);
+        border-color: #e7dcff;
+    }
+    .ep-doc-meta { color: #625b96; }
+
+    .ep-panel {
+        background: rgba(255,255,255,.58);
+        border-color: #ddd0ff;
+        box-shadow: 0 12px 35px rgba(106,82,180,.10);
+    }
+    .ep-panel-tight {
+        background: rgba(255,255,255,.52);
+        border-color: #ddd0ff;
+        box-shadow: 0 9px 28px rgba(106,82,180,.055);
+    }
+
+    .ep-eyebrow { color: #6958ef; }
+    .ep-section-title { color: #17145c; }
+    .ep-section-subtitle { color: #625b96; }
+    .ep-muted { color: #625b96; }
+
+    .ep-hero {
+        background: linear-gradient(135deg, rgba(255,255,255,.78), #f0e9ff 58%, #fbeaf8);
+        border-color: #e2d8ff;
+        box-shadow: 0 12px 35px rgba(106,82,180,.10);
+    }
+    .ep-hero-title { color: #15115d; }
+    .ep-hero-copy { color: #665f95; }
+
+    .ep-feature {
+        border-color: rgba(220,207,255,.95);
+        box-shadow: 0 9px 24px rgba(100,80,170,.055);
+    }
+    .ep-feature.lav { background: linear-gradient(145deg, #f3edff, #eee8ff); }
+    .ep-feature.pink { background: linear-gradient(145deg, #fff0f6, #ffe6f1); }
+    .ep-feature.peach { background: linear-gradient(145deg, #fff7e9, #ffeedf); }
+    .ep-feature-title { color: #19145f; }
+    .ep-feature-copy { color: #655f91; }
+    .ep-arrow {
+        background: rgba(255,255,255,.78);
+        color: #251a80;
+    }
+
+    .ep-stat {
+        background: linear-gradient(145deg, #f2edff, #fff0f8);
+        border-color: #e5dafa;
+    }
+    .ep-stat-label { color: #625b96; }
+
+    .ep-topic {
+        background: #f0eaff;
+        border-color: #dfd3ff;
+        color: #5c50be;
+    }
+
+    .ep-badge {
+        background: #f0eaff;
+        border-color: #ded3ff;
+        color: #5c50be;
+    }
+    .ep-source-title { color: #625b96; }
+
+    .ep-quiz-header {
+        background: linear-gradient(135deg, #7763f6, #9477ff);
+        box-shadow: 0 10px 25px rgba(105,82,240,.17);
+    }
+    .ep-quiz-eyebrow { color: #eeeaff; }
+
+    .ep-question-card {
+        background: rgba(255,255,255,.75);
+        border-color: #e4daf8;
+        box-shadow: 0 12px 35px rgba(106,82,180,.10);
+    }
+    .ep-question-number { color: #6958ef; }
+    .ep-result-score { color: #17145c; }
+    .ep-result-label { color: #625b96; }
+
+    div[data-testid="stButton"] > button {
+        border-color: #e3daf7 !important;
+        background: rgba(255,255,255,.65) !important;
+        color: #251d72 !important;
+    }
+    div[data-testid="stButton"] > button:hover {
+        background: #f0eaff !important;
+        border-color: #cfc0ff !important;
+        color: #5d4ce4 !important;
+    }
+    div[data-testid="stButton"] > button[kind="primary"] {
+        background: linear-gradient(135deg, #6857f5, #806cf8) !important;
+        border-color: #6857f5 !important;
+        color: #fff !important;
+        box-shadow: 0 7px 18px rgba(104,87,245,.18) !important;
+    }
+    div[data-testid="stButton"] > button[kind="primary"]:hover {
+        background: #5e4be8 !important;
+    }
+
+    div[data-testid="stRadio"] label,
+    div[data-testid="stRadio"] label p,
+    div[data-testid="stSelectbox"] label,
+    div[data-testid="stMultiSelect"] label,
+    div[data-testid="stNumberInput"] label,
+    div[data-testid="stFileUploader"] label,
+    div[data-testid="stFileUploader"] small,
+    div[data-testid="stExpander"] summary,
+    div[data-testid="stExpander"] summary p {
+        color: #5e588b !important;
+    }
+
+    div[data-testid="stRadio"] [role="radiogroup"] label,
+    div[data-testid="stRadio"] [role="radiogroup"] label p {
+        color: #27205f !important;
+    }
+
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stNumberInput"] input,
+    div[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+    div[data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+        background: rgba(255,255,255,.75) !important;
+        color: #211968 !important;
+        border-color: #e0d6f5 !important;
+    }
+
+    div[data-testid="stTextInput"] input::placeholder {
+        color: #938cae !important;
+    }
+
+    div[data-testid="stFileUploader"] {
+        background: rgba(255,255,255,.52) !important;
+        border-color: #cfc0f1 !important;
+    }
+    div[data-testid="stFileUploader"] section {
+        background: rgba(255,255,255,.5) !important;
+        border-color: #cfc0f1 !important;
+    }
+    div[data-testid="stFileUploader"] section * {
+        color: #5d5785 !important;
+    }
+    div[data-testid="stFileUploader"] button {
+        background: #fff !important;
+        color: #251d72 !important;
+        border-color: #ddd2f5 !important;
+    }
+
+    [data-baseweb="popover"],
+    [data-baseweb="menu"],
+    [role="listbox"] {
+        background: #fffaff !important;
+        color: #211968 !important;
+    }
+    [role="option"] {
+        color: #211968 !important;
+        background: #fffaff !important;
+    }
+    [role="option"]:hover { background: #f2edff !important; }
+
+    div[data-testid="stChatInput"] textarea {
+        color: #211968 !important;
+        background: #fffaff !important;
+        caret-color: #211968 !important;
+    }
+    div[data-testid="stChatInput"] textarea::placeholder {
+        color: #8a83a8 !important;
+    }
+
+    div[data-testid="stChatMessage"] {
+        color: #211968 !important;
+    }
+    div[data-testid="stChatMessage"] p,
+    div[data-testid="stChatMessage"] li,
+    div[data-testid="stChatMessage"] span,
+    div[data-testid="stChatMessage"] strong,
+    div[data-testid="stChatMessage"] em {
+        color: #211968 !important;
+    }
+
+    /* v3 bottom/info surfaces, when these existing elements are present. */
+    .ep-uploadbar {
+        background: linear-gradient(90deg, #e6edff, #ece9ff);
+        border-color: #d9dcff;
+        color: #25318c;
+    }
+    .ep-bottom-quote {
+        background: linear-gradient(135deg, rgba(247,241,255,.9), rgba(255,239,248,.88));
+        border-color: #e1d5ff;
+        color: #615795;
+        box-shadow: 0 9px 24px rgba(106,82,180,.055);
+    }
+    .ep-bottom-quote strong { color: #6d5ee0; }
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -1645,7 +1874,7 @@ with center_col:
             with col:
                 st.markdown(
                     f"""
-                    <div class="ep-feature">
+                    <div class="ep-feature {["lav","pink","peach"][["Ask questions","Practice","Improve"].index(title)]}">
                         <div style="font-size:1.2rem;margin-bottom:0.35rem;">{icon}</div>
                         <div class="ep-feature-title">{title}</div>
                         <div class="ep-feature-copy">{copy}</div>
