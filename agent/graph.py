@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, END
 from agent.tools import (
     search_pdf,
     calculate,
-    web_search
+    web_search,
 )
 
 
@@ -22,69 +22,78 @@ class AgentState(TypedDict):
 def choose_tool(state: AgentState):
     question = state["question"]
     source = state["source"]
-    
+
     if source == "PDF":
         return {"tool": "PDF"}
-    
+
     if source == "WEB":
         return {"tool": "WEB"}
-    
+
     llm = get_llm()
-    
+
     prompt = f"""
-You are the routing system for EduPilot,
-an AI study assistant.
+You are a routing classifier for EduPilot,
+an AI study assistant with an uploaded PDF document.
 
-Choose exactly ONE tool.
+Choose exactly ONE routing label.
 
-Available tools:
-
-PDF
-- Use this for questions about the uploaded PDF.
-- Use this for academic concepts, definitions,
+ROUTE_PDF
+- Use this when the question can be answered from
+  the uploaded PDF.
+- Use this for questions about the document.
+- Use this for general academic concepts, definitions,
   explanations, summaries, or topics that could
-  reasonably be answered from the student's document.
-- When in doubt between PDF and WEB, choose PDF.
+  reasonably be answered from the document.
+- When uncertain, choose ROUTE_PDF.
 
-CALCULATOR
-- Use this when the user asks you to perform
+ROUTE_CALCULATOR
+- Use this only when the user asks you to perform
   a mathematical calculation.
 
-WEB
-- Use this only when the user explicitly needs
+ROUTE_WEB
+- Use this only when the question explicitly requires
   current, external, or web-based information.
+
+Important:
+The uploaded PDF should be preferred whenever the
+question can reasonably be answered from it.
+Do not choose ROUTE_WEB merely because the question
+is general or because you do not know the PDF contents.
 
 Student question:
 
 {question}
 
-Return ONLY one word:
+Return ONLY one of these labels:
 
-PDF
-CALCULATOR
-WEB
+ROUTE_PDF
+ROUTE_CALCULATOR
+ROUTE_WEB
 """
-    
+
     response = llm.invoke(prompt)
-    tool = response.content.strip().upper()
-    
-    if tool not in ["PDF", "CALCULATOR", "WEB"]:
-        tool = "PDF"
-    
-    return {"tool": tool}
+    route = response.content.strip().upper()
 
+    route_map = {
+        "ROUTE_PDF": "PDF",
+        "ROUTE_CALCULATOR": "CALCULATOR",
+        "ROUTE_WEB": "WEB",
+    }
 
+    return {"tool": route_map.get(route, "PDF")}
 def create_graph(vector_store):
+
     def pdf_node(state: AgentState):
         result = search_pdf(vector_store, state["question"])
+
         return {
             "result": result["context"],
-            "sources": result["sources"]
+            "sources": result["sources"],
         }
-    
+
     def calculator_node(state: AgentState):
         llm = get_llm()
-        
+
         prompt = f"""
 Convert the following mathematical question
 into ONLY a valid mathematical expression
@@ -109,41 +118,45 @@ Return ONLY the expression.
 
 Do not include explanation.
 """
-        
+
         response = llm.invoke(prompt)
         expression = response.content.strip()
         result = calculate(expression)
-        
+
         return {
             "result": result,
-            "sources": []
+            "sources": [],
         }
-    
+
     def web_node(state: AgentState):
         result = web_search(state["question"])
+
         return {
             "result": result,
-            "sources": []
+            "sources": [],
         }
-    
+
     def route_tool(state: AgentState):
         return state["tool"]
-    
+
     def final_answer(state: AgentState):
         llm = get_llm()
-        
+
         prompt = f"""
 You are EduPilot, an AI study assistant.
 
 Answer the student's question using the tool result below.
 
 Student question:
+
 {state["question"]}
 
 Tool used:
+
 {state["tool"]}
 
 Tool result:
+
 {state["result"]}
 
 Instructions:
@@ -163,33 +176,37 @@ Instructions:
 
 Return only the final answer.
 """
-        
+
         response = llm.invoke(prompt)
-        return {"answer": response.content}
-    
+
+        return {
+            "answer": response.content,
+        }
+
     graph = StateGraph(AgentState)
-    
+
     graph.add_node("choose_tool", choose_tool)
     graph.add_node("pdf", pdf_node)
     graph.add_node("calculator", calculator_node)
     graph.add_node("web", web_node)
     graph.add_node("final_answer", final_answer)
-    
+
     graph.set_entry_point("choose_tool")
-    
+
     graph.add_conditional_edges(
         "choose_tool",
         route_tool,
         {
             "PDF": "pdf",
             "CALCULATOR": "calculator",
-            "WEB": "web"
-        }
+            "WEB": "web",
+        },
     )
-    
+
     graph.add_edge("pdf", "final_answer")
     graph.add_edge("calculator", "final_answer")
     graph.add_edge("web", "final_answer")
+
     graph.add_edge("final_answer", END)
-    
+
     return graph.compile()
