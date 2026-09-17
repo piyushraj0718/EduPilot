@@ -407,6 +407,6 @@ That process changed the project from a basic LLM demo into a more complete appl
 ## Author
 
 **Piyush Raj**  
-BSc Student, IIT Patna
+BS Student, IIT Patna
 
 Built as a portfolio project to explore RAG, LLM agents, backend APIs, and AI-assisted learning systems.
